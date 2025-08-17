@@ -1,62 +1,81 @@
-/*
 package rmi_calc;
 
-import org.junit.*;
 import static org.junit.Assert.*;
+import org.junit.*;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.concurrent.CountDownLatch;
 
-public class CalculatorMultiClientTest {
+public class CalculatorSingleClientTest {
 
-    private static final int CLIENTS = 3;
-    private static Calculator[] calcs;
+    private static Calculator calc;
 
     @BeforeClass
-    public static void setupClients() throws Exception {
-        calcs = new Calculator[CLIENTS];
+    public static void setUpClass() throws Exception {
         Registry registry = LocateRegistry.getRegistry("localhost", 1099);
-        for (int i = 0; i < CLIENTS; i++) {
-            calcs[i] = (Calculator) registry.lookup("CalculatorService");
-        }
-        // Clear the shared stack for fairness
-        while (!calcs[0].isEmpty()) { try { calcs.pop(); } catch(Exception e) {} }
+        calc = (Calculator) registry.lookup("CalculatorService");
+        // Clean up stack if not empty
+        while (!calc.isEmpty()) { try { calc.pop(); } catch(Exception e) {} }
     }
 
     @Test
-    public void testConcurrentPushPop() throws Exception {
-        final CountDownLatch startLatch = new CountDownLatch(1);
-        final CountDownLatch doneLatch = new CountDownLatch(CLIENTS);
+    public void testIsEmptyOnNewStack() throws Exception {
+        assertTrue(calc.isEmpty());
+    }
 
-        Runnable task = () -> {
-            try {
-                startLatch.await();
-                // Push unique values for this client
-                int val1 = (int) (Thread.currentThread().getId() % 50) + 1;
-                int val2 = val1 + 2;
-                Calculator c = calcs[(int)(Thread.currentThread().getId() % CLIENTS)];
-                c.pushValue(val1);
-                c.pushValue(val2);
-                c.pushOperation("max");
-                int result = c.pop();
-                // Should be the max of the two pushed numbers
-                assertEquals(Math.max(val1, val2), result);
-                doneLatch.countDown();
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail("Exception in thread: " + e);
-            }
-        };
+    @Test
+    public void testMinOperation() throws Exception {
+        calc.pushValue(8);
+        calc.pushValue(-1);
+        calc.pushValue(12);
+        calc.pushOperation("min");
+        int result = calc.pop();
+        assertEquals(-1, result);
+    }
 
-        for (int i = 0; i < CLIENTS; i++) {
-            new Thread(task, "Client-" + i).start();
-        }
+    @Test
+    public void testMaxOperation() throws Exception {
+        calc.pushValue(4);
+        calc.pushValue(99);
+        calc.pushValue(2);
+        calc.pushOperation("max");
+        int result = calc.pop();
+        assertEquals(99, result);
+    }
 
-        startLatch.countDown(); // Release all threads
-        doneLatch.await(); // Wait for all to finish
-        // If all threads pass, the test passes
+    @Test
+    public void testGcdOperation() throws Exception {
+        calc.pushValue(54);
+        calc.pushValue(36);
+        calc.pushOperation("gcd");
+        int result = calc.pop();
+        assertEquals(18, result);
+    }
+
+    @Test
+    public void testLcmOperation() throws Exception {
+        calc.pushValue(6);
+        calc.pushValue(8);
+        calc.pushOperation("lcm");
+        int result = calc.pop();
+        assertEquals(24, result);
+    }
+
+    @Test
+    public void testDelayPop() throws Exception {
+        calc.pushValue(77);
+        long start = System.currentTimeMillis();
+        int popped = calc.delayPop(1000);
+        long elapsed = System.currentTimeMillis() - start;
+        assertEquals(77, popped);
+        assertTrue(elapsed >= 1000); // should delay at least 1 second
+    }
+
+    @Test(expected = java.rmi.RemoteException.class)
+    public void testPopFromEmptyThrows() throws Exception {
+        // Stack should be empty now; popping throws exception
+        calc.pop();
     }
 }
 
-*/
+
