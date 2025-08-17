@@ -1,4 +1,6 @@
 package rmi_calc;
+//This is the server implementation of the RMI system, or the server side
+//The RMI registry is also initiated here and binds with the object 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
