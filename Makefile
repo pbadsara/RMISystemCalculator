@@ -9,7 +9,7 @@ SOURCES = Calculator.java CalculatorImplementation.java CalculatorServer.java Ca
 CLASSES = $(SOURCES:.java=.class)
 
 # Default: compile all classes
-all: $(CLASSES)
+all: $(java)
 
 %.class: %.java
 	$(JAVAC) $<
@@ -27,6 +27,12 @@ client: all
 	$(JAVA) CalculatorClient
 
 # Run single client test
+test: all
+	$(JAVA) CalculatorSingleClientTest
+
 # Run multi client test
+test: all
+	$(JAVA) CalculatorMultiClientTest
+
 clean:
 	rm -f *.class
