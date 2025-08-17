@@ -1,7 +1,9 @@
 package rmi_calc;
+//This is the part of the RMI system where actual work is stored
+//Here, we tell the system what to do in what condition/operator/method
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.RemoteException;
-import java.util.Stack;
+import java.util.Stack; //Used to implement the stack 
 
 public class CalculatorImplementation extends UnicastRemoteObject implements Calculator {
     private final Stack<Integer> stack = new Stack<>();
@@ -66,7 +68,8 @@ public class CalculatorImplementation extends UnicastRemoteObject implements Cal
         return pop();
     }
 
-    /** Greatest Common Divisor (Euclidean algorithm, all manual) */
+    /** Greatest Common Divisor/gcd */
+    //GCD is the Greatest Common Divisor, that is, the biggest number that divides both values
     private int gcd(int a, int b) {
         // Manual absolute value
         a = (a < 0) ? -a : a;
@@ -79,7 +82,8 @@ public class CalculatorImplementation extends UnicastRemoteObject implements Cal
         return a;
     }
 
-    /** Least Common Multiple (uses manual gcd) */
+    /** Least Common Multiple/lcm */
+    // It is the smallest number that can be divided by both inputs without leaving a remainder
     private int lcm(int a, int b) {
         int absA = (a < 0) ? -a : a;
         int absB = (b < 0) ? -b : b;
